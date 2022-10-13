@@ -1,6 +1,8 @@
 import numpy as np
 from ctypes import CDLL, c_double, c_int
-
+'''
+Implementation of viterbi algorithm in c (viterbi.c), parsing input and output arrays from python. 
+'''
 
 lib = CDLL("./viterbi.so")  # load library containing c functions
 viterbi = lib.viterbi
