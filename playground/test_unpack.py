@@ -16,5 +16,8 @@ trans = np.array([[0.10, 0.90, 0, 0, 0, 0, 0],
                   [0, 0, 0, 0, 0, 0.10, 0.90],
                   [0, 0, 0, 0.90, 0, 0, 0.10]], dtype=c_double)
 
-outarr = np.zeros((1, 30), dtype=c_int)
+outarr = np.zeros((15, 2), dtype=c_int)
 unpack(trans, outarr, c_int(7))
+
+for s, t in outarr:
+    print(s, t)
