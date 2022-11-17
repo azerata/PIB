@@ -1,10 +1,21 @@
 import numpy as np
+from distutils import ccompiler
 from ctypes import CDLL, c_double, c_int
 '''
 Implementation of viterbi algorithm in c (viterbi.c), parsing input and output arrays from python. 
 '''
 
-lib = CDLL("./vit_unpack.so")  # load library containing c functions
+# compile c functions:
+fn = "vit_unpack"
+compiler = ccompiler.new_compiler()
+files = compiler.compile([fn+'.c'])
+libname = compiler.library_filename(fn)
+compiler.link_shared_lib(files, fn)
+# Now grabs vit_unpack.c, compiles it and makes a shared library libvit_unpack.so
+# i am not sure why it adds lib to the front of the output name, but i despise it.
+
+
+lib = CDLL("./libvit_unpack.so")  # load library containing c functions
 viterbi = lib.viterbi
 
 # Set in and output types:
@@ -16,7 +27,7 @@ viterbi.argtypes = [np.ctypeslib.ndpointer(c_double, flags="C_CONTIGUOUS"),
                     np.ctypeslib.ndpointer(c_double, flags="C_CONTIGUOUS"),
                     np.ctypeslib.ndpointer(c_int, flags="C_CONTIGUOUS"),
                     np.ctypeslib.ndpointer(c_int, flags="C_CONTIGUOUS"),
-                    c_int, c_int, c_int]
+                    c_int, c_int, c_int, c_int]
 '''
 input format:   viterbi(initial probability [pi],
                         transition matrix [trans_],
@@ -25,8 +36,10 @@ input format:   viterbi(initial probability [pi],
                         output matrix [vert_],
                         output optimal path [out_p]
                         input sequence [x],
-                        # of [states] [emits], [input_length])
+                        # of [states] [emits], [input_length], [size])
 '''
+
+# Input sequence
 inp = np.array([1, 1, 1, 1, 0, 0, 0, 0, 0], dtype=c_int)
 
 
@@ -66,10 +79,11 @@ for i in range(3):
             foo.append(j)
             foo.append(i)
 t_array = np.array(foo, dtype=c_int)
+size = t_array.size//2
 
 # np.log(trans_probs_3_state)
 # run!
 viterbi(init_probs_3_state, trans_probs_3_state, emission_probs_3_state, t_array,
-        v_table, out_p, inp, c_int(3), c_int(4), c_int(inp.size))
+        v_table, out_p, inp, c_int(3), c_int(4), c_int(inp.size), c_int(size))
 print(v_table)
 print(out_p)

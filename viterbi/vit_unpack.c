@@ -7,6 +7,7 @@
 #define V(I, J) vert_[(I)*states + (J)]
 #define FROM(I) trans_a_[2 * (I)]
 #define TO(I) trans_a_[2 * (I) + 1]
+#define B(I, J) back_[(I)*states + (J)]
 
 int float_to_int(float f)
 {
@@ -19,7 +20,7 @@ double max(double a, double b)
     return (a < b) ? b : a;
 }
 
-void viterbi(const double *pi, const double *trans_, const double *emits_, int *trans_a_, double *vert_, int *opt_p, const int *x, int states, int emits, int n)
+void viterbi(const double *pi, const double *trans_, const double *emits_, int *trans_a_, double *vert_, int *opt_p, const int *x, int states, int emits, int n, int size)
 /* input format :   viterbi(initial probability [pi],
                             transition matrix [trans_],
                             emission matrix [emits_],
@@ -27,9 +28,11 @@ void viterbi(const double *pi, const double *trans_, const double *emits_, int *
                             output matrix [vert_],
                             output optimal path [opt_p]
                             input sequence [x],
-                            # of [states], [emits], [input_length])
+                            # of [states], [emits], [input_length], [size])
                             */
 {
+    int *back_ = malloc(n * states);
+    /*
     // find size of unpacked array
     int size = 0;
     for (int i = 0; i < states; i++)
@@ -40,7 +43,7 @@ void viterbi(const double *pi, const double *trans_, const double *emits_, int *
                 size += 1;
         }
     }
-
+    */
     // is this viterbi?
     for (int i = 0; i < n; i++)
     {
@@ -55,6 +58,12 @@ void viterbi(const double *pi, const double *trans_, const double *emits_, int *
         for (int k = 0; k < size; k++)
         {
             V(i + 1, TO(k)) = max(V(i + 1, TO(k)), E(TO(k), x[i + 1]) + T(FROM(k), TO(k)) + V(i, FROM(k)));
+
+            // update B table
+            if (V(i + 1, TO(k)) == E(TO(k), x[i + 1]) + T(FROM(k), TO(k)) + V(i, FROM(k)))
+            {
+                B(i + 1, TO(k)) = FROM(k);
+            }
         }
     }
 
@@ -66,6 +75,14 @@ void viterbi(const double *pi, const double *trans_, const double *emits_, int *
         best = max(best, V(n - 1, j));
         end = (V(n - 1, j) == best) ? j : end;
     }
+
+    int bb = end;
+    for (int i = n - 2; i > 0; i--)
+    {
+        printf("%d", bb);
+        bb = B(i - 1, bb);
+    }
+
     opt_p[n - 1] = end;
 
     for (int i = n - 2; i >= 0; i--)
@@ -80,4 +97,5 @@ void viterbi(const double *pi, const double *trans_, const double *emits_, int *
             }
         }
     }
+    free(back_);
 }
