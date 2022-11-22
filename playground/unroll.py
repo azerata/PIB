@@ -1,5 +1,6 @@
 from __future__ import annotations
 import numpy as np
+from csnake import CodeWriter, Variable, Subscript
 
 trans_probs_3_state = np.array([
     [0.00, 0.05, 0.95],
@@ -17,3 +18,6 @@ for i in range(states):
 print(t_array)
 for From, to, prob in t_array:
     print(f"V(i, {to}) = max( V(i, {to}), {prob} + V(i-1, {From})")
+
+
+
