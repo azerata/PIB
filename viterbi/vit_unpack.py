@@ -11,7 +11,7 @@ Implementation of viterbi algorithm in c (viterbi.c), parsing input and output a
 def main():
     argparser = argparse.ArgumentParser(
         "Viterbi", description="runs viterbi algorithm on, currently still testing on hardcoded input")
-    argparser.add_argument("-c", "--compile", action="store_true",
+    argparser.add_argument("-c", action="store_true",
                            help="add -c flag if the c library should be recompiled before running")
 
     args = argparser.parse_args()
@@ -22,11 +22,10 @@ def main():
         compiler = ccompiler.new_compiler()
         # ccompiler base values use system os, and the default compiler for that os
         files = compiler.compile([fn+'.c'])
-        libname = compiler.library_filename(fn)
+        libname = compiler.shared_object_filename(fn)
         compiler.link_shared_lib(files, fn)
         # Now grabs vit_unpack.c, compiles it and makes a shared library libvit_unpack.so
         # i am not sure why it adds lib to the front of the output name, but i despise it.
-
     lib = CDLL("./libvit_unpack.so")  # load library containing c functions
     viterbi = lib.viterbi
 

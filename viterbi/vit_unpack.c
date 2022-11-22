@@ -9,12 +9,6 @@
 #define TO(I) trans_a_[2 * (I) + 1]
 #define B(I, J) back_[(I)*states + (J)]
 
-int float_to_int(float f)
-{
-    int new_int = f * 1000000;
-    return new_int;
-}
-
 double max(double a, double b)
 {
     return (a < b) ? b : a;
@@ -31,20 +25,10 @@ void viterbi(const double *pi, const double *trans_, const double *emits_, int *
                             # of [states], [emits], [input_length], [size])
                             */
 {
-    int *back_ = malloc(n * states);
-    /*
-    // find size of unpacked array
-    int size = 0;
-    for (int i = 0; i < states; i++)
-    {
-        for (int j = 0; j < states; j++)
-        {
-            if (T(i, j) != -INFINITY)
-                size += 1;
-        }
-    }
-    */
-    // is this viterbi?
+
+    int *back_ = malloc(n * states * sizeof back_);
+
+    // Viterbi algorithm, only considering possible transitions, building the backtracking matrix while we run.
     for (int i = 0; i < n; i++)
     {
         for (int k = 0; k < states; k++)
@@ -60,7 +44,7 @@ void viterbi(const double *pi, const double *trans_, const double *emits_, int *
             V(i + 1, TO(k)) = max(V(i + 1, TO(k)), E(TO(k), x[i + 1]) + T(FROM(k), TO(k)) + V(i, FROM(k)));
 
             // update B table
-            if (V(i + 1, TO(k)) == E(TO(k), x[i + 1]) + T(FROM(k), TO(k)) + V(i, FROM(k)))
+            if (V(i + 1, TO(k)) == E(TO(k), x[i + 1]) + T(FROM(k), TO(k)) + V(i, FROM(k)) && V(i + 1, TO(k)) != -INFINITY)
             {
                 B(i + 1, TO(k)) = FROM(k);
             }
@@ -76,26 +60,13 @@ void viterbi(const double *pi, const double *trans_, const double *emits_, int *
         end = (V(n - 1, j) == best) ? j : end;
     }
 
-    int bb = end;
-    for (int i = n - 2; i > 0; i--)
-    {
-        printf("%d", bb);
-        bb = B(i - 1, bb);
-    }
-
     opt_p[n - 1] = end;
 
-    for (int i = n - 2; i >= 0; i--)
+    int bb = end;
+    for (int i = n; i > 0; i--)
     {
-        end = opt_p[i + 1];
-        double target = V(i + 1, end);
-        for (int k = 0; k < size; k++)
-        {
-            if (TO(k) == end)
-            {
-                opt_p[i] = float_to_int(V(i, FROM(k)) + T(FROM(k), TO(k)) + E(TO(k), x[i + 1])) == float_to_int(target) ? FROM(k) : opt_p[i];
-            }
-        }
+        opt_p[i - 1] = bb;
+        bb = B(i - 1, bb);
     }
     free(back_);
 }
