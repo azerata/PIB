@@ -26,7 +26,7 @@ def main():
         compiler.link_shared_lib(files, fn)
         # Now grabs vit_unpack.c, compiles it and makes a shared library libvit_unpack.so
         # i am not sure why it adds lib to the front of the output name, but i despise it.
-
+        print(libname)
     lib = CDLL("./libviterbi.so")  # load library containing c functions
     viterbi = lib.viterbi
 
