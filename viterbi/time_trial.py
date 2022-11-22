@@ -4,8 +4,9 @@ from time import time
 from ctypes import CDLL, c_double, c_int
 
 
-vit_unpacking = CDLL("./vit_unpack.so")  # load library containing c functions
-vit_regular = CDLL("./viterbi.so")
+# load library containing c functions
+vit_unpacking = CDLL("./libvit_unpack.so")
+vit_regular = CDLL("./libviterbi.so")
 reg_viterbi = vit_regular.viterbi
 unp_viterbi = vit_unpacking.viterbi
 
@@ -18,7 +19,7 @@ unp_viterbi.argtypes = [np.ctypeslib.ndpointer(c_double, flags="C_CONTIGUOUS"),
                         np.ctypeslib.ndpointer(c_double, flags="C_CONTIGUOUS"),
                         np.ctypeslib.ndpointer(c_int, flags="C_CONTIGUOUS"),
                         np.ctypeslib.ndpointer(c_int, flags="C_CONTIGUOUS"),
-                        c_int, c_int, c_int]
+                        c_int, c_int, c_int, c_int]
 
 reg_viterbi.restype = None
 reg_viterbi.argtypes = [np.ctypeslib.ndpointer(c_double),
@@ -66,7 +67,6 @@ for i in range(3):
             foo.append(j)
             foo.append(i)
 t_array = np.array(foo, dtype=c_int)
-
 # np.log(trans_probs_3_state)
 # run!
 
@@ -77,7 +77,7 @@ def time_unp() -> float:
 
     t1 = time()
     unp_viterbi(init_probs_3_state, trans_probs_3_state, emission_probs_3_state, t_array,
-                v_table, out_p, inp, c_int(3), c_int(4), c_int(inp.size))
+                v_table, out_p, inp, c_int(3), c_int(4), c_int(inp.size), c_int(t_array.size//2))
     t2 = time()-t1
     return t2
 
@@ -95,10 +95,10 @@ def time_reg() -> float:
 
 funcs = [time_unp, time_reg]
 foo = {fun.__name__: 0.0 for fun in funcs}
-for i in range(1000):
+for i in range(10000):
     for fun in funcs:
         foo[fun.__name__] += fun()
 print(foo)
 
-cProfile.run("time_reg()")
-cProfile.run("time_unp()")
+# cProfile.run("time_reg()")
+# cProfile.run("time_unp()")
