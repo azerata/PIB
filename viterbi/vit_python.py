@@ -62,7 +62,6 @@ def viterbi(x, v, trans, emits, pi, opt_p) -> None:
             v[i+1, j] = best + emits[j, x[i+1]]
 
     opt_p[-1] = np.argmax(v[n-1])
-    print(opt_p)
     for i in range(1, n)[::-1]:
         opt_p[i-1] = b_table[i, opt_p[i]]
 

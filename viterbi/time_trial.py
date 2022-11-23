@@ -2,6 +2,7 @@ import numpy as np
 import cProfile
 from time import time
 from ctypes import CDLL, c_double, c_int
+from vit_python import viterbi as vit_pyt
 
 
 # load library containing c functions
@@ -93,7 +94,17 @@ def time_reg() -> float:
     return t2
 
 
-funcs = [time_unp, time_reg]
+def time_pyt() -> float:
+    out_p = np.zeros(inp.shape, dtype=c_int)
+    v_table = np.zeros((inp.size, init_probs_3_state.size), dtype=c_double)
+    t1 = time()
+    vit_pyt(inp, v_table, trans_probs_3_state,
+            emission_probs_3_state, init_probs_3_state, out_p)
+    t2 = time() - t1
+    return t2
+
+
+funcs = [time_unp, time_reg, time_pyt]
 foo = {fun.__name__: 0.0 for fun in funcs}
 for i in range(10000):
     for fun in funcs:
