@@ -20,8 +20,8 @@ for i in range(states):
             t_array.append((i, j, np.log(trans_probs_3_state[i, j])))
 
 loop_unrolled = '\n'.join(
-    f'\tV(i, {to}) = MAX(V(i, {to}), {prob} + V(i-1, {From}) + E({to}, x[i]));\n \
-        B(i, {to}) = ARGMAX(V(i, {to}), B(i, {to}), {prob} + V(i-1, {From}) + E({to}, x[i]), {From} );'
+    f'\tV(i, {to}) = MAX(V(i, {to}), {prob} + V(i-1, {From}) + E({to}, x[i]));\n\
+    B(i, {to}) = ARGMAX(V(i, {to}), B(i, {to}), {prob} + V(i-1, {From}) + E({to}, x[i]), {From} );'
     for From, to, prob in t_array)
 
 
@@ -58,20 +58,11 @@ void viterbi(const double *trans_, const double *pi, const double *emits_, doubl
         best = MAX(best, V(n - 1, k));
         end = (best == V(n - 1, k)) ? k : end;
     }
-    opt_p[n - 1] = end;
-    for (int i = n-2 ; i > 0; i--)
+    int bb = end;
+    for (int i = n; i > 0; i--)
     {
-        double best = -INFINITY;
-        int state = 0;
-        for (int k = 0; k < states; k++)
-        {
-            if ((V(i, k) + T(k, opt_p[i + 1])) > best && V(i, k) != -INFINITY)
-            {
-                best = V(i, k);
-                state = k;
-            }
-            opt_p[i] = state;
-        }
+        opt_p[i - 1] = bb;
+        bb = B(i - 1, bb);
     }
     free(back_);
 }
@@ -142,4 +133,4 @@ viterbi(trans_probs_3_state, init_probs_3_state, emission_probs_3_state, v_table
         out_p, inp, c_int(states), c_int(emission_probs_3_state.shape[1]), c_int(len(inp)))
 
 print(v_table, '\n', out_p)
-# rmtree(path)
+rmtree(path)
