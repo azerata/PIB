@@ -35,20 +35,13 @@ def main():
     pi = np.random.rand(1, args.states)
     pi = normalize(pi, norm='l1')
 
-    print(np.sum(emits, 1))
     x = np.random.randint(0, args.emits - 1, args.n)
-
-    print(states, emits, x, pi)
 
     out = {"t": states, "e": emits, "p": pi, "x": x}
 
     pickle.dump(out, args.out)
 
     args.out.close()
-    with open("./test.bin", "rb") as file:
-        tmp = pickle.load(file)
-    for i in tmp:
-        print(i, tmp[i])
 
 
 if __name__ == "__main__":
