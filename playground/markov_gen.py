@@ -20,7 +20,8 @@ def main():
 
     args = argparser.parse_args()
 
-    states = np.random.rand(args.states, args.states)
+    # Transition probs
+    states = np.random.rand(args.states, args.states).astype(c_double)
     if args.sparse:
         for i in range(args.states):
             for j in range(args.states):
@@ -29,26 +30,33 @@ def main():
 
     states = normalize(states, norm="l1", axis=1)
 
-    emits = np.random.rand(args.states, args.emits)
+    t_array: list[tuple[int, int, float]] = []
+
+    for i in range(args.states):
+        for j in range(args.states):
+            if states[i, j] != 0:
+                t_array.append((i, j, np.log(states[i, j])))
+
+    # emition probs
+    emits = np.random.rand(args.states, args.emits).astype(c_double)
     emits = normalize(emits, norm="l1", axis=1)
 
-    pi = np.random.rand(1, args.states)
+    # initial probs
+    pi = np.random.rand(1, args.states).astype(c_double)
     pi = normalize(pi, norm='l1')
 
-    print(np.sum(emits, 1))
-    x = np.random.randint(0, args.emits - 1, args.n)
+    # Example input
+    x = np.random.randint(0, args.emits - 1, args.n).astype(c_int)
 
-    print(states, emits, x, pi)
-
-    out = {"t": states, "e": emits, "p": pi, "x": x}
+    out = {"t": states, "e": emits, "p": pi, "x": x, "a": t_array}
 
     pickle.dump(out, args.out)
 
     args.out.close()
-    with open("./test.bin", "rb") as file:
-        tmp = pickle.load(file)
-    for i in tmp:
-        print(i, tmp[i])
+    # with open("./test.bin", "rb") as file:
+    #    tmp = pickle.load(file)
+    # for i in tmp:
+    #    print(i, tmp[i])
 
 
 if __name__ == "__main__":
