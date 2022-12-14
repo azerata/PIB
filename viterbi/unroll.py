@@ -61,7 +61,7 @@ def main():
 
         for (int k = 0; k < states; k++)
         {
-            V(0, k) = pi[k] + E(x[0], k);
+            V(0, k) = pi[k] + E(k, x[0]);
         }
         for (int i = 1; i < n; i++)
         {
