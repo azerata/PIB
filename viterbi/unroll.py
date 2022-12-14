@@ -25,6 +25,8 @@ def main():
     pi = np.log(model['p'])
     x = model['x']
     states = pi.size
+
+    # Check if the t array has already been constructed. if not, do so:
     if not args.s:
         trans = model['t']
         t_array: list[tuple[int, int, float]] = []
@@ -40,6 +42,7 @@ def main():
         B(i, {to}) = ARGMAX(V(i, {to}), B(i, {to}), {prob} + V(i-1, {From}) + E({to}, x[i]), {From} );'
         for From, to, prob in t_array)
 
+    # Basis for the c function to run viterbi alg.
     xxx = """
     #include <stdlib.h>
     #include <math.h>
@@ -108,7 +111,7 @@ def main():
     out_p = np.zeros(x.shape, dtype=c_int)
     v_table = np.log(np.zeros((x.size, pi.size), dtype=c_double))
 
-    # Load so, and call viterbi.
+    # Load .so, and call viterbi.
     lib = CDLL(f"{path}/lib{fn}.so")
     viterbi = lib.viterbi
     viterbi.restype = None
