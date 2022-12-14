@@ -1,6 +1,8 @@
 from __future__ import annotations
 import numpy as np
 import argparse
+import sys
+import pickle
 from distutils import ccompiler
 from ctypes import CDLL, c_double, c_int
 '''
@@ -13,6 +15,8 @@ def main():
         "Viterbi", description="runs viterbi algorithm on, currently still testing on hardcoded input")
     argparser.add_argument("-c", action="store_true",
                            help="add -c flag if the c library should be recompiled before running")
+    argparser.add_argument("infile", nargs='?',
+                           type=argparse.FileType("rb"), default=sys.stdin)
 
     args = argparser.parse_args()
 
@@ -70,12 +74,19 @@ def main():
         [0.20, 0.40, 0.30, 0.10],
     ], dtype=c_double))
 
+    model: dict[str, np.ndarray] = pickle.load(args.infile)
+
+    trans = np.log(model['t'])
+    emits = np.log(model['e'])
+    pi = np.log(model['p'])
+    inp = model['x']
+
     out_p = np.zeros(inp.shape, dtype=c_int)
-    v_table = np.zeros((inp.size, init_probs_3_state.size), dtype=c_double)
+    v_table = np.zeros((inp.size, pi.size), dtype=c_double)
 
     # run!
-    viterbi(init_probs_3_state, trans_probs_3_state, emission_probs_3_state,
-            v_table, out_p, inp, c_int(3), c_int(4), c_int(inp.size))
+    viterbi(pi, trans, emits,
+            v_table, out_p, inp, c_int(emits.shape[0]), c_int(emits.shape[1]), c_int(inp.size))
     print(v_table)
     print(out_p)
 

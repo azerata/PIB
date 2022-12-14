@@ -1,6 +1,8 @@
 from __future__ import annotations
 import argparse
 import numpy as np
+import sys
+import pickle
 from distutils import ccompiler
 from ctypes import CDLL, c_double, c_int
 '''
@@ -13,6 +15,8 @@ def main():
         "Viterbi", description="runs viterbi algorithm on, currently still testing on hardcoded input")
     argparser.add_argument("-c", action="store_true",
                            help="add -c flag if the c library should be recompiled before running")
+    argparser.add_argument("infile", nargs='?',
+                           type=argparse.FileType("rb"), default=sys.stdin)
 
     args = argparser.parse_args()
 
@@ -50,6 +54,13 @@ def main():
                             # of [states] [emits], [input_length], [size])
     '''
 
+    # grab input from dumped bin
+    model: dict[str, np.ndarray] = pickle.load(args.infile)
+    input_x = model['x']
+    emit = np.log(model['e'])
+    trans = model['t']
+    pi = np.log(model['p'])
+
     # Input sequence
     inp = np.array([1, 1, 1, 1, 0, 0, 0, 0, 0], dtype=c_int)
 
@@ -72,8 +83,8 @@ def main():
         [0.20, 0.40, 0.30, 0.10],
     ], dtype=c_double))
 
-    out_p = np.zeros(inp.shape, dtype=c_int)
-    v_table = np.zeros((inp.size, init_probs_3_state.size), dtype=c_double)
+    out_p = np.zeros(input_x.shape, dtype=c_int)
+    v_table = np.zeros((input_x.size, pi.size), dtype=c_double)
 
     # unpack stuff
     probs_to_array = np.array([
@@ -83,18 +94,19 @@ def main():
     ], dtype=c_double)
 
     foo = []
-    for i in range(3):
-        for j in range(3):
-            if probs_to_array[i, j] != 0:
+    for i in range(pi.size):
+        for j in range(pi.size):
+            if trans[i, j] != 0:
                 foo.append(j)
                 foo.append(i)
     t_array = np.array(foo, dtype=c_int)
     size = t_array.size//2
 
+    trans = np.log(trans)
     # np.log(trans_probs_3_state)
     # run!
-    viterbi(init_probs_3_state, trans_probs_3_state, emission_probs_3_state, t_array,
-            v_table, out_p, inp, c_int(3), c_int(4), c_int(inp.size), c_int(size))
+    viterbi(pi, trans, emit, t_array,
+            v_table, out_p, input_x, c_int(emit.shape[0]), c_int(emit.shape[1]), c_int(input_x.size), c_int(size))
     print(v_table)
     print(out_p)
 

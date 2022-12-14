@@ -1,5 +1,8 @@
 from __future__ import annotations
 import numpy as np
+import sys
+import argparse
+import pickle
 from ctypes import c_int, c_double
 # Input sequence
 inp = np.array([1, 1, 1, 1, 0, 0, 0, 0, 0], dtype=c_int)
@@ -27,6 +30,28 @@ out_p = np.zeros(inp.shape, dtype=c_int)
 v_table = np.zeros((inp.size, init_probs_3_state.size), dtype=c_double)
 
 
+def main():
+    argparser = argparse.ArgumentParser(
+        description="python implementation of viterbi, unpacking the possible transitions")
+    argparser.add_argument("infile", nargs='?',
+                           type=argparse.FileType('rb'), default=sys.stdin)
+
+    args = argparser.parse_args()
+    model = pickle.load(args.infile)
+
+    x = model['x']
+    trans = np.log(model['t'])
+    emit = np.log(model['e'])
+    pi = np.log(model['p'])
+
+    out_p = np.zeros(x.shape, dtype=c_int)
+    v_table = np.zeros((x.size, pi.size), dtype=c_double)
+
+    viterbi(x, v_table, trans, emit, pi, out_p)
+    print(v_table)
+    print(out_p)
+
+
 # unpack stuff
 probs_to_array = np.array([
     [0.00, 0.05, 0.95],
@@ -50,7 +75,7 @@ def viterbi(x, v, trans, emits, pi, opt_p) -> None:
     n = x.size
 
     for j in range(states):
-        v[0, j] = pi[j]+emits[j, x[0]]
+        v[0, j] = pi[0, j]+emits[j, x[0]]
 
     for i in range(n-1):
         for j in range(states):
@@ -68,8 +93,5 @@ def viterbi(x, v, trans, emits, pi, opt_p) -> None:
     return None
 
 
-viterbi(inp, v_table, trans_probs_3_state,
-        emission_probs_3_state, init_probs_3_state, out_p)
-
-print(v_table)
-print(out_p)
+if __name__ == "__main__":
+    main()
