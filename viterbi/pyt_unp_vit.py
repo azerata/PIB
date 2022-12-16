@@ -8,6 +8,7 @@ import argparse
 def viterbi(x: np.ndarray, pi: np.ndarray, emit: np.ndarray, trans: np.ndarray, v: np.ndarray, out: np.ndarray) -> None:
     states = pi.size
     emits = emit.shape[1]
+    back = np.zeros(v.shape, dtype=int)
 
     t_arr: list[tuple[int, int]] = []
     for i in range(states):
@@ -21,7 +22,14 @@ def viterbi(x: np.ndarray, pi: np.ndarray, emit: np.ndarray, trans: np.ndarray, 
     for i in range(1, x.size):
         for f, t in t_arr:
             v[i, t] = max(v[i, t], trans[f, t] + emit[t, x[i]] + v[i-1, f])
-    print(v)
+            back[i, t] = f if trans[f, t] + emit[t, x[i]] + \
+                v[i-1, f] >= v[i, t] else back[i, t]
+
+    out[-1] = np.argmax(back[:, -1])
+    i = out.size
+    while i > 0:
+        i -= 1
+        out[i-1] = back[i, out[i]]
 
 
 def main():
@@ -39,9 +47,12 @@ def main():
     emit = np.log(data['e'])
 
     v_table = np.log(np.zeros((x.size, pi.size)))
-    out = np.zeros(x.shape)
+    out = np.zeros(x.shape, dtype=int)
 
     viterbi(x, pi, emit, trans, v_table, out)
+
+    print(v_table)
+    print(out)
 
 
 if __name__ == "__main__":
