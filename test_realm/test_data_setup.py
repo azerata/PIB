@@ -38,13 +38,21 @@ def main():
         generate_constant_n(args.emits, args.states, args.n,
                             args.MAX, path+"\\"+base_name)
     elif args.constant == 's':
-        pass
+        generate_constane_k(args.emits, args.states, args.n,
+                            args.MAX, path+"\\"+base_name)
 
 
 def generate_constant_n(emits: int, states: int, n: int, max: int, out: str):
-    step = max // 10
+    step = max // 20
     for i in range(states, max+1, step):
         os.system(f'python markov_gen.py {i} {emits} {n} {out + "_" + str(i)}')
+
+
+def generate_constane_k(emits: int, states: int, n: int, max: int, out: int):
+    step = max // 20
+    for i in range(n, max+1, step):
+        os.system(
+            f'python markov_gen.py {states} {emits} {i} {out + "_" + str(i)}')
 
 
 if __name__ == "__main__":
