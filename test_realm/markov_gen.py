@@ -53,10 +53,6 @@ def main():
     pickle.dump(out, args.out)
 
     args.out.close()
-    # with open("./test.bin", "rb") as file:
-    #    tmp = pickle.load(file)
-    # for i in tmp:
-    #    print(i, tmp[i])
 
 
 if __name__ == "__main__":
