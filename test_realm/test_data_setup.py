@@ -36,10 +36,10 @@ def main():
     # run generator
     if args.constant == 'n':
         generate_constant_n(args.emits, args.states, args.n,
-                            args.MAX, path+"\\"+base_name)
+                            args.MAX, os.path.join(path, base_name))
     elif args.constant == 's':
         generate_constane_k(args.emits, args.states, args.n,
-                            args.MAX, path+"\\"+base_name)
+                            args.MAX, os.path.join(path, base_name))
 
 
 def generate_constant_n(emits: int, states: int, n: int, max: int, out: str):

@@ -29,11 +29,13 @@ def main():
     times = []
     n_size = []
     for fn in os.scandir(path):
+        print(fn)
         for fun in test_funcs:
-            n_size.append(str(fn).split('_')[-1])
+            n_size.append(str(fn).split('_')[-1].split("'")[0])
             algs.append(fun)
             t1 = time.process_time()
-            os.system(f"python {fun} {fn}")
+            print(f"python {fun} {os.path.join(data_dir , fn.name)}")
+            os.system(f"python {fun} {os.path.join(data_dir , fn.name)}")
             t2 = time.process_time() - t1
             times.append(t2)
 
